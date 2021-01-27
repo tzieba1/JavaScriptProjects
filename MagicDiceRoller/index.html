@@ -1,0 +1,232 @@
+<!-- I, Tommy Zieba, 000797152 certify that this material is my original work. 
+  No other person's work has been used without due acknowledgement. -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>'React' Dice Roller</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="style.css" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Lobster&family=Permanent+Marker&family=Stalinist+One&display=swap" rel="stylesheet"> 
+
+    <!-- Load React. -->
+    <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
+    <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  </head>
+  <body>
+    <!-- Injection point for this React application for rolling "dice". -->
+    <div id="root"></div>
+
+    <script type="text/babel">
+      /**
+       * This class represents the application being injected into this HTML template.
+       * The only required state variables are the number of sides, number of dice, and
+       * an array of random numbers representing the dice values for a roll.
+       */ 
+      class App extends React.Component {
+        constructor() {
+          super();
+          this.state = {
+            numDice: 2,
+            numSides: 6,
+            randomNumbers: []
+          };
+        }
+
+        componentDidMount() {
+          var tempRandomNumbers = [];
+          for(var i = 0 ; i < this.state.numDice ; i++) {
+            tempRandomNumbers.push({id: i, value: Math.floor((Math.random() * this.state.numSides)+1)});
+            
+          }
+          this.setState({randomNumbers: tempRandomNumbers});
+        }
+        
+        handleRollButton_Click = (e) => {
+          var tempRandomNumbers = [];
+          for(var i = 0 ; i < this.state.numDice ; i++) {
+            tempRandomNumbers.push({id: i, value: Math.floor((Math.random() * this.state.numSides+1))});
+          }
+          this.setState({randomNumbers: tempRandomNumbers});
+        }
+
+        handleDiceUpArrow_Click = (e) => {
+          if(this.state.numDice < 100) {
+            this.setState({numDice: this.state.numDice + 1});
+          }
+        }
+
+        handleDiceDownArrow_Click = (e) => {
+          if(this.state.numDice > 1) {
+            this.setState({numDice: this.state.numDice - 1});
+          }
+        }
+
+        handleSidesUpArrow_Click = (e) => {
+          if(this.state.numSides < 10000) {
+            this.setState({numSides: this.state.numSides + 1});
+          }
+        }
+
+        handleSidesDownArrow_Click = (e) => {
+          if(this.state.numSides > 2) {
+            this.setState({numSides: this.state.numSides - 1});
+          }
+        }
+
+        render() {
+          return(
+            <div className="App">
+              <div id="titleBacking"><h1>Dice Roller</h1></div>
+              <main>
+                <div id="diceSelector">
+                  <h2 id="selectorHeading">Number of Dice</h2>
+                  <UpArrow handleClick={this.handleDiceUpArrow_Click} />
+                  <NumberLabel value={this.state.numDice} />
+                  <DownArrow handleClick={this.handleDiceDownArrow_Click}/>
+                </div>
+
+                <div id="sideSelector">
+                  <h2 id="selectorHeading">Number of Sides</h2>
+                  <UpArrow handleClick={this.handleSidesUpArrow_Click} />
+                  <NumberLabel value={this.state.numSides} />
+                  <DownArrow handleClick={this.handleSidesDownArrow_Click}/>
+                </div>
+              </main>
+
+              <RollButton handleClick={this.handleRollButton_Click}/>
+
+              <Result randomNumbers={this.state.randomNumbers} />
+            </div>
+          );
+        }
+      }
+
+      /**
+       * This class is written as an arrow function because it is stateless.
+       * This class is called in the application to display a result after 
+       * clicking the RollButton. This component is child to App.
+       */
+      const Result = (props) => (
+        <div className="Result">
+          <Sum values={props.randomNumbers} />
+          <div id="diceArray">
+            {props.randomNumbers.map(
+              num => (
+                <Dice key={num.id} value={num.value}/>
+              )
+            )}
+          </div>
+        </div>
+      );
+
+      /**
+       * This class represents the stateless dice being displayed in the Result.
+       * The props are used to give the dice their value to display as an image.
+       * This component is child to Result.
+       */
+      const Dice = (props) => {
+        if(props.value > 9){
+          return(
+            <div className="Dice">
+              <div id="blankDice">
+                <div id="blankDiceNumber">{props.value}</div>
+              </div>
+            </div>
+          );
+        } else {
+          return(
+            <div className="Dice">
+              <img alt="dice" src={`images/die${props.value}.png`} />
+            </div>
+          );
+        }
+
+        
+      }
+
+      /**
+       * This class represents the stateless sum being displayed for the 
+       * random numbers representing dice that have been rolled.
+       */
+      const Sum = (props) => {
+        let sum = 0;
+        for (var i=0; i< props.values.length ; i++) {
+          sum = sum + props.values[i].value; 
+        }
+
+        return(
+          <div className="Sum">
+            <h2 id="resultTitle">Resulting Sum:</h2> 
+            <NumberLabel value={sum} />
+          </div>
+        );
+      }
+
+      /**
+       * This class represents the stateless RollButton that is clicked to 
+       * show a Result based on the encapsulating App's state variables for
+       * the number of sides and number of dice. An array of random numbers
+       * gets replaced in the App's state and is used in the Result upon render.
+       * This component is child to App.
+       */
+      const RollButton = (props) => (
+        <div className="RollButton">
+          <button id="rollButton" type="button" onClick={props.handleClick}><img id="rollButtonLogo" src="images/roll.png" />ROLL</button>
+        </div>
+      );
+      
+      /**
+       * A simple stateless class for displaying the current numerical value
+       * for a Dial. This is child to Dial.
+       */
+      const NumberLabel = (props) => (
+        <div className="NumberLabel">
+          {props.value}
+        </div>
+      );
+
+      /**
+       * A simple stateless class for incrementing a Dial up. This component is 
+       * child to Dial.
+       */ 
+      const UpArrow = (props) => (
+        <div className="UpArrow">
+          <img 
+            id="upArrow"
+            alt="upArrow" 
+            src="images/upArrow.png" 
+            width="150" 
+            height="109"
+            onClick={props.handleClick}
+          />
+        </div>
+      );
+
+      /**
+       * A simple stateless class for incrementing a Dial down. This component is 
+       * child to Dial.
+       */ 
+      const DownArrow = (props) => (
+        <div className="DownArrow">
+          <img 
+            id="downArrow"
+            alt="downArrow" 
+            src="images/downArrow.png" 
+            width="150" 
+            height="109"
+            onClick={props.handleClick}
+          />
+        </div>
+      );
+
+      ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+  </body>
+</html>
